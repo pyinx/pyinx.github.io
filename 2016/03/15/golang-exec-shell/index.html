@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>golang os/exec调用shell脚本卡住问题排 | Pyinx Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="exec,golang," />
+  
+
+  <meta name="description" content="代码如下
+1234567891011121314151617package mainimport (        &quot;fmt&quot;        &quot;os/exec&quot;)func main() &amp;#123;        cmd := exec.Command(&quot;/bin/sh&quot;, &quot;/tmp/1.sh&quot;)            out, err := cmd.Output()">
+<meta property="og:type" content="article">
+<meta property="og:title" content="golang os/exec调用shell脚本卡住问题排">
+<meta property="og:url" content="http://blog.itsir.org/2016/03/15/golang-exec-shell/index.html">
+<meta property="og:site_name" content="Pyinx Blog">
+<meta property="og:description" content="代码如下
+1234567891011121314151617package mainimport (        &quot;fmt&quot;        &quot;os/exec&quot;)func main() &amp;#123;        cmd := exec.Command(&quot;/bin/sh&quot;, &quot;/tmp/1.sh&quot;)            out, err := cmd.Output()">
+<meta property="og:updated_time" content="2016-03-15T12:24:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="golang os/exec调用shell脚本卡住问题排">
+<meta name="twitter:description" content="代码如下
+1234567891011121314151617package mainimport (        &quot;fmt&quot;        &quot;os/exec&quot;)func main() &amp;#123;        cmd := exec.Command(&quot;/bin/sh&quot;, &quot;/tmp/1.sh&quot;)            out, err := cmd.Output()">
+  
+  
+
+  
+
+
+  <link rel="stylesheet" href="/css/styles.css" type="text/css">
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+</head>
+
+<body>
+  <div class="content-post">
+  <a class="avatar" href="/archives">
+    <img src="/images/avatar.jpg" alt="" />
+  </a>
+  <article id="post-golang-exec-shell" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    <a class="post-title" href="/2016/03/15/golang-exec-shell/">golang os/exec调用shell脚本卡住问题排</a>
+
+  </header>
+
+  <div class="article-meta">
+    <span>2016-03-15</span>
+
+    <span> | </span>
+
+    <span class="article-author">pyinx</span>
+
+    <span> | </span>
+
+    
+  <span class="article-category">
+    <a class="article-category-link" href="/categories/golang/">golang</a>
+  </span>
+
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>代码如下</p>
+<figure class="highlight openscad"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line"><span class="built_in">import</span> <span class="params">(</span><br><span class="line">        <span class="string">"fmt"</span></span><br><span class="line">        <span class="string">"os/exec"</span></span><br><span class="line">)</span></span><br><span class="line"></span><br><span class="line">func main<span class="params">()</span> &#123;</span><br><span class="line">        cmd := exec.Command<span class="params">(<span class="string">"/bin/sh"</span>, <span class="string">"/tmp/1.sh"</span>)</span>    </span><br><span class="line">        out, err := cmd.Output<span class="params">()</span>                       </span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> err <span class="built_in">!</span>= nil &#123;                                </span><br><span class="line">                fmt.Println<span class="params">(err)</span>                       </span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;                                       </span><br><span class="line">                fmt.Println<span class="params">(string<span class="params">(out)</span>)</span>               </span><br><span class="line">        &#125;                                              </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># cat /tmp/<span class="number">1.</span>sh</span></span><br><span class="line">date</span><br><span class="line"><span class="preprocessor">#./t  （不会卡住）</span></span><br><span class="line">Tue Mar <span class="number">15</span> <span class="number">17</span>:<span class="number">59</span>:<span class="number">29</span> CST <span class="number">2016</span></span><br><span class="line"><span class="preprocessor"># vim /tmp/<span class="number">1.</span>sh</span></span><br><span class="line"><span class="preprocessor"># cat /tmp/<span class="number">1.</span>sh</span></span><br><span class="line">/etc/init.d/salt-minion restart</span><br><span class="line"><span class="preprocessor"># strace ./t （这里一直卡住不退出）</span></span><br><span class="line">...</span><br><span class="line">read(<span class="number">4</span>, <span class="string">"Stopping salt-minion daemon: "</span>, <span class="number">512</span>) = <span class="number">29</span></span><br><span class="line">futex(<span class="number">0x58bac0</span>, FUTEX_WAKE, <span class="number">1</span>)          = <span class="number">1</span></span><br><span class="line">read(<span class="number">4</span>, <span class="string">"["</span>, <span class="number">1507</span>)                      = <span class="number">1</span></span><br><span class="line">futex(<span class="number">0x58bac0</span>, FUTEX_WAKE, <span class="number">1</span>)          = <span class="number">1</span></span><br><span class="line">read(<span class="number">4</span>, <span class="string">"  OK  ]\r"</span>, <span class="number">1506</span>)              = <span class="number">8</span></span><br><span class="line">read(<span class="number">4</span>, <span class="string">"\n"</span>, <span class="number">1498</span>)                     = <span class="number">1</span></span><br><span class="line">futex(<span class="number">0x58bac0</span>, FUTEX_WAKE, <span class="number">1</span>)          = <span class="number">1</span></span><br><span class="line">read(<span class="number">4</span>, <span class="string">"Starting salt-minion daemon: "</span>, <span class="number">1497</span>) = <span class="number">29</span></span><br><span class="line">read(<span class="number">4</span>, <span class="string">"["</span>, <span class="number">1468</span>)                      = <span class="number">1</span></span><br><span class="line">futex(<span class="number">0x58bac0</span>, FUTEX_WAKE, <span class="number">1</span>)          = <span class="number">1</span></span><br><span class="line">futex(<span class="number">0x58ba40</span>, FUTEX_WAKE, <span class="number">1</span>)          = <span class="number">1</span></span><br><span class="line">read(<span class="number">4</span>, <span class="string">"  OK  ]\r\n"</span>, <span class="number">1467</span>)            = <span class="number">9</span></span><br><span class="line">read(<span class="number">4</span>, <span class="number">0xc20807a04e</span>, <span class="number">1458</span>)             = ? ERESTARTSYS (To be restarted)</span><br><span class="line">--- SIGWINCH (Window changed) @ <span class="number">0</span> (<span class="number">0</span>) ---</span><br><span class="line">rt_sigreturn(<span class="number">0x1c</span>)                      = <span class="number">0</span></span><br><span class="line">read(<span class="number">4</span>,</span><br></pre></td></tr></table></figure>
+<p>执行/etc/init.d/salt-minion restart后，脚本一直不退出。<br>困扰了我一下午，一直找不到原因，后来找组内的go浪大神帮忙看了下，问题终于解决了。</p>
+<h3 id="原因">原因</h3><p>执行/etc/init.d/salt-minion restart后，会启动一个salt-minion的子进程.cmd.Output执行后会去调一个Wait的方法，Wait方法会等待所有进程都执行完后才会退出。这样就形成了死循环，导致一直不退出。</p>
+<h3 id="解决">解决</h3><p>直接调用exec的Start方法，绕过Wait方法。</p>
+<figure class="highlight openscad"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line"><span class="built_in">import</span> <span class="params">(</span><br><span class="line">        <span class="string">"bytes"</span></span><br><span class="line">        <span class="string">"fmt"</span></span><br><span class="line">        <span class="string">"os/exec"</span></span><br><span class="line">        <span class="string">"time"</span></span><br><span class="line">)</span></span><br><span class="line"></span><br><span class="line">func main<span class="params">()</span> &#123;</span><br><span class="line">        buf := bytes.NewBuffer<span class="params">([]byte&#123;&#125;)</span></span><br><span class="line">        cmd := exec.Command<span class="params">(<span class="string">"/bin/sh"</span>, <span class="string">"/tmp/1.sh"</span>)</span></span><br><span class="line">        cmd.Stdout = buf</span><br><span class="line">        cmd.Stderr = buf</span><br><span class="line">        <span class="comment">//out, err := cmd.Output()</span></span><br><span class="line">        err := cmd.Start<span class="params">()</span></span><br><span class="line">        time.Sleep<span class="params">(time.Second * <span class="number">2</span>)</span> <span class="comment">// sleep 2s,捕获脚本输出</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> err <span class="built_in">!</span>= nil &#123;</span><br><span class="line">                fmt.Println<span class="params">(err)</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                fmt.Println<span class="params">(string<span class="params">(buf.String<span class="params">()</span>)</span>)</span></span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+  </div>
+</article>
+
+
+
+<section class="disqus-comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+
+</div>
+
+  
+<script>
+  var disqus_shortname = 'pyinx';
+  
+  var disqus_url = 'http://blog.itsir.org/2016/03/15/golang-exec-shell/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+  <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"undefined"};
+(function() {
+  var ds = document.createElement('script');
+  ds.type = 'text/javascript';ds.async = true;
+  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+  ds.charset = 'UTF-8';
+  (document.getElementsByTagName('head')[0]
+   || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+</script>
+<!-- 多说公共JS代码 end -->
+
+</body>
+</html>
