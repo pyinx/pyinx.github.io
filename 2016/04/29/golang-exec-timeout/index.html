@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>golang-exec-timeout | Pyinx Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="golang,os/exec,timeout," />
+  
+
+  <meta name="description" content="golang cmd exec timeoutgolang的os/exec包中并没有实现超时方法，但是很多时候会有这样的需求，于是自己写了例子。
+12345678910111213141516171819202122232425262728293031323334353637383940414243package mainimport (    &quot;errors&quot;    &quot;fmt&quot;    &quot;os/e">
+<meta property="og:type" content="article">
+<meta property="og:title" content="golang-exec-timeout">
+<meta property="og:url" content="http://blog.itsir.org/2016/04/29/golang-exec-timeout/index.html">
+<meta property="og:site_name" content="Pyinx Blog">
+<meta property="og:description" content="golang cmd exec timeoutgolang的os/exec包中并没有实现超时方法，但是很多时候会有这样的需求，于是自己写了例子。
+12345678910111213141516171819202122232425262728293031323334353637383940414243package mainimport (    &quot;errors&quot;    &quot;fmt&quot;    &quot;os/e">
+<meta property="og:updated_time" content="2016-04-29T07:04:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="golang-exec-timeout">
+<meta name="twitter:description" content="golang cmd exec timeoutgolang的os/exec包中并没有实现超时方法，但是很多时候会有这样的需求，于是自己写了例子。
+12345678910111213141516171819202122232425262728293031323334353637383940414243package mainimport (    &quot;errors&quot;    &quot;fmt&quot;    &quot;os/e">
+  
+  
+
+  
+
+
+  <link rel="stylesheet" href="/css/styles.css" type="text/css">
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+</head>
+
+<body>
+  <div class="content-post">
+  <a class="avatar" href="/archives">
+    <img src="/images/avatar.jpg" alt="" />
+  </a>
+  <article id="post-golang-exec-timeout" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    <a class="post-title" href="/2016/04/29/golang-exec-timeout/">golang-exec-timeout</a>
+
+  </header>
+
+  <div class="article-meta">
+    <span>2016-04-29</span>
+
+    <span> | </span>
+
+    <span class="article-author">pyinx</span>
+
+    <span> | </span>
+
+    
+  <span class="article-category">
+    <a class="article-category-link" href="/categories/golang/">golang</a>
+  </span>
+
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="golang_cmd_exec_timeout">golang cmd exec timeout</h2><p>golang的os/exec包中并没有实现超时方法，但是很多时候会有这样的需求，于是自己写了例子。</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"errors"</span></span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">    <span class="string">"os/exec"</span></span><br><span class="line">    <span class="string">"time"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="type">Result</span> struct &#123;</span><br><span class="line">    data []byte</span><br><span class="line">    err  error</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="type">ErrorExecTimeout</span> = errors.<span class="type">New</span>(<span class="string">"exec timeout"</span>)</span><br><span class="line"></span><br><span class="line">func <span class="type">Exec</span>(cmd <span class="type">string</span>, timeout <span class="type">int64</span>) ([]byte, error) &#123;</span><br><span class="line">    c := exec.<span class="type">Command</span>(<span class="string">"/bin/bash"</span>, <span class="string">"-c"</span>, cmd)</span><br><span class="line">    t := time.<span class="type">NewTimer</span>(time.<span class="type">Duration</span>(timeout) * time.<span class="type">Second</span>)</span><br><span class="line">    done := make(chan <span class="type">bool</span>)</span><br><span class="line">    <span class="literal">result</span> := &amp;<span class="type">Result</span>&#123;data: []byte&#123;&#125;, err: <span class="keyword">nil</span>&#125;</span><br><span class="line">    go myExec(c, done, <span class="literal">result</span>)</span><br><span class="line">    select &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-done:</span><br><span class="line">        // fmt.<span class="type">Println</span>(<span class="string">"exec done"</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">result</span>.data, <span class="literal">result</span>.err</span><br><span class="line">    <span class="keyword">case</span> &lt;-t.C:</span><br><span class="line">        c.<span class="type">Process</span>.<span class="type">Kill</span>()</span><br><span class="line">        // fmt.<span class="type">Println</span>(<span class="string">"timeout"</span>)</span><br><span class="line">        <span class="literal">result</span>.err = <span class="type">ErrorExecTimeout</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">result</span>.data, <span class="literal">result</span>.err</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func myExec(c *exec.<span class="type">Cmd</span>, ch chan <span class="type">bool</span>, <span class="literal">result</span> *<span class="type">Result</span>) &#123;</span><br><span class="line">    <span class="literal">result</span>.data, <span class="literal">result</span>.err = c.<span class="type">CombinedOutput</span>()</span><br><span class="line">    ch &lt;- <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    output, err := <span class="type">Exec</span>(<span class="string">"sleep 6&amp;&amp;echo hello"</span>, <span class="number">5</span>)</span><br><span class="line">    fmt.<span class="type">Println</span>(<span class="type">string</span>(output), err)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+  </div>
+</article>
+
+
+
+<section class="disqus-comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+
+</div>
+
+  
+<script>
+  var disqus_shortname = 'pyinx';
+  
+  var disqus_url = 'http://blog.itsir.org/2016/04/29/golang-exec-timeout/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+  <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"undefined"};
+(function() {
+  var ds = document.createElement('script');
+  ds.type = 'text/javascript';ds.async = true;
+  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+  ds.charset = 'UTF-8';
+  (document.getElementsByTagName('head')[0]
+   || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+</script>
+<!-- 多说公共JS代码 end -->
+
+</body>
+</html>
